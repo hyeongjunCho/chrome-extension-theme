@@ -1,8 +1,7 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { pallete } from "../types/Palletes";
 import ColorSuggestionView from "./ColorSuggestionView";
-import Loading from "./Loading";
 
 interface ComponentProps {
   pivotColor: string;
@@ -19,7 +18,6 @@ const fetchColorPallete = (color: string) => {
 function ColorSuggestion({ pivotColor }: ComponentProps) {
   const [prevColor, setPrevColor] = useState("");
   const [data, setData] = useState<pallete[]>([]);
-  const [loading, setLoading] = useState(true);
 
   if (prevColor !== pivotColor) {
     if (pivotColor) {
@@ -28,14 +26,10 @@ function ColorSuggestion({ pivotColor }: ComponentProps) {
   }
   
   useEffect(() => {
-    setLoading(true);
     fetchColorPallete(prevColor).then((response) => {
-      setLoading(false);
       setData(response.data);
     })
   }, [prevColor]);
-
-  if (loading) return <Loading />
 
   return <ColorSuggestionView palletes={data} />;
 }

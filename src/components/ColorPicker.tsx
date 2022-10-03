@@ -1,9 +1,11 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ColorResult, SketchPicker } from "react-color";
+import * as _ from "lodash";
 import styled from "styled-components";
 
 const RelativeDiv = styled.div`
   position: relative;
+  z-index: 100;
 `;
 
 const PopupBackgroundDiv = styled.div`
@@ -40,6 +42,7 @@ interface ComponentProps {
 
 function ColorPicker({ pivotColor, setPivotColor }: ComponentProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [color, setColor] = useState("#FFFFFF");
 
   const open = useCallback(
     () => setShowColorPicker(true),
@@ -50,10 +53,20 @@ function ColorPicker({ pivotColor, setPivotColor }: ComponentProps) {
     [setShowColorPicker]
   );
   const handleChange = useCallback(
-    (pick: ColorResult) => setPivotColor(pick.hex),
+    (pick: ColorResult) => setColor(pick.hex),
+    [setColor]
+  );
+  const handleComplete = useMemo(
+    () =>
+      _.debounce((color: string) => {
+        setPivotColor(color);
+      }, 500),
     [setPivotColor]
   );
-  console.log(pivotColor);
+
+  useEffect(() => {
+    handleComplete(color);
+  }, [color, handleComplete]);
 
   if (!showColorPicker) {
     return <SwitchColorPickerDiv color={pivotColor} onClick={open} />;
@@ -64,7 +77,7 @@ function ColorPicker({ pivotColor, setPivotColor }: ComponentProps) {
       <PopupBackgroundDiv onClick={close} />
       <SwitchColorPickerDiv color={pivotColor} />
       <ColorPickerContainer>
-        <SketchPicker color={pivotColor} onChange={handleChange} />
+        <SketchPicker color={color} onChange={handleChange} />
       </ColorPickerContainer>
     </RelativeDiv>
   );
